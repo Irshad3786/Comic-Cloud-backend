@@ -52,3 +52,5 @@ db/*.db
 # Misc
 .cache/
 .tmp/
+
+/src/generated/prisma
