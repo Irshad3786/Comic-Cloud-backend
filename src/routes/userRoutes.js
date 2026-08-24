@@ -1,7 +1,14 @@
 const express = require('express');
-const { createUser, getUserById, sendVerificationCode, verifyCode, resendVerificationCode, checkUserIdAvailability, createUserId } = require('../controllers/userController');
+const { loginUser, createUser, getUserById, sendVerificationCode, verifyCode, resendVerificationCode, checkUserIdAvailability, createUserId } = require('../controllers/userController');
 
 const router = express.Router();
+
+/**
+ * @route POST /api/users/login
+ * @description Login with email and password
+ * @access Public
+ */
+router.post('/login', loginUser);
 
 /**
  * @route POST /api/users

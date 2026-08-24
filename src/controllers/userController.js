@@ -167,7 +167,7 @@ async function sendVerificationCode(req, res, next) {
 
     // Send verification email
     try {
-      await sendVerificationCode(user.email, verificationCode);
+      await sendVerificationEmail(user.email, verificationCode);
     } catch (emailError) {
       console.error('Failed to send verification email:', emailError);
       return res.status(500).json({
@@ -295,7 +295,7 @@ async function resendVerificationCode(req, res, next) {
 
     // Send verification email
     try {
-      await sendVerificationCode(user.email, verificationCode);
+      await sendVerificationEmail(user.email, verificationCode);
     } catch (emailError) {
       console.error('Failed to send verification email:', emailError);
       return res.status(500).json({
@@ -431,7 +431,55 @@ async function createUserId(req, res, next) {
   }
 }
 
+/**
+ * Login user with email and password
+ * POST /api/users/login
+ * Body: { email, password }
+ */
+async function loginUser(req, res, next) {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({
+        error: 'Email and password are required',
+      });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { email: email.toLowerCase() },
+    });
+
+    if (!user) {
+      return res.status(401).json({
+        error: 'Invalid email or password',
+      });
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+    if (!isPasswordValid) {
+      return res.status(401).json({
+        error: 'Invalid email or password',
+      });
+    }
+
+    return res.json({
+      message: 'Login successful',
+      user: {
+        id: user.id,
+        email: user.email,
+        userId: user.userId,
+        name: user.name,
+        status: user.status,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
+  loginUser,
   createUser,
   getUserById,
   sendVerificationCode,
